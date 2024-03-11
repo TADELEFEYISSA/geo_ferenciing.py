@@ -1,0 +1,43 @@
+from geopy.geocoders import Nominatim
+from shapely.geometry import Point, Polygon
+
+# Define addresses
+addresses = [
+    "4441 Collins Ave, Miami Beach, FL 33140",
+    "1100 Lincoln Rd Mall, Miami Beach, FL 33139",
+    "959 West Ave, Miami Beach, FL 33139",
+    "1550 Collins Ave, Miami Beach, FL 33139",
+    "9700 Collins Ave, Bal Harbour, FL 33154"
+]
+
+# Initialize geocoder
+geolocator = Nominatim(user_agent="geo_fence_script")
+
+# Initialize empty list to store geofences
+geofences = []
+
+# Geocode each address and create geofences
+for address in addresses:
+    # Geocode the address to get its latitude and longitude
+    location = geolocator.geocode(address)
+    if location:
+        # Create a point geometry using the latitude and longitude
+        point = Point(location.longitude, location.latitude)
+        # Define rectangle around the point with buffer (5-10 feet)
+        buffer_distance = 0.000015  # Approximate buffer distance for 5-10 feet
+        min_lon, min_lat = point.buffer(buffer_distance).bounds[0:2]
+        max_lon, max_lat = point.buffer(buffer_distance).bounds[2:4]
+        # Create geofence polygon
+        geofence = Polygon([
+            (min_lon, min_lat),
+            (min_lon, max_lat),
+            (max_lon, max_lat),
+            (max_lon, min_lat)
+        ])
+        geofences.append(geofence)
+
+# Print or use geofences as needed
+for idx, geofence in enumerate(geofences):
+    print(f"Geofence {idx + 1}: {geofence}")
+
+# Now you can use these geofences for your application
